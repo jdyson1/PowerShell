@@ -14,7 +14,7 @@ $myprofile = (Get-ChildItem env:HOMEDRIVE).Value + "\PowerShell\profile.ps1"
 # Check for existence
 If (Test-Path -Path $myprofile) {
 	Write-Verbose "Profile found"
-	& $myprofile
+	. $myprofile
 }
 Else {
 	Write-Warning "Profile script $($myprofile) not found."
