@@ -24,10 +24,6 @@ If (Test-Path -Path $HomeDrivePowerShellFolder) {
 	Write-Information "PowerShell folder not found in HOMEDRIVE.  It will not be added to the path."
 }
 
-#function Get-LastBoot ([string]$Hostname = $env:computername) {
-#  return Get-WmiObject Win32_OperatingSystem -ComputerName $Hostname | Select-Object csname,@{ LABEL = 'LastBootUpTime'; expression = { $_.ConverttoDateTime($_.lastbootuptime) } }
-#}
-
 try {
 	Import-Module posh-git
 } catch {
@@ -36,4 +32,24 @@ try {
 
 
 # Update help files
-. Update-Help
+#. Update-Help
+
+function Get-ProcessByName {
+	param([string]$string)
+	Get-Process | Where-Object { $_.ProcessName -like $string }
+}
+
+# Customize the prompt
+#function prompt
+#{
+#	$GitPromptSettings.DefaultPromptWriteStatusFirst = $true
+#	$prompt = Write-Prompt "PS "
+#	$prompt += & $GitPromptScriptBlock
+#	
+#	if ($prompt) { $prompt } else { " " }
+#
+#
+#	$PromptData = "PS $($executionContext.SessionState.Path.CurrentLocation)$('>' * ($nestedPromptLevel + 1))"
+#}
+
+Write-Information "Profile loaded."
