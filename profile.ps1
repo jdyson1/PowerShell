@@ -39,6 +39,11 @@ function Get-ProcessByName {
 	Get-Process | Where-Object { $_.ProcessName -like $string }
 }
 
+# Customize posh-git prompt
+if (Get-Module -ListAvailable -Name posh-git) {
+	$GitPromptSettings.DefaultPromptPrefix = "PS [$((Get-ChildItem Env:\COMPUTERNAME).Value)] "
+}
+
 # Customize the prompt
 #function prompt
 #{
@@ -63,8 +68,8 @@ Write-Information "Profile loaded."
 # SIG # Begin signature block
 # MIIHQAYJKoZIhvcNAQcCoIIHMTCCBy0CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUt7alvrZd22tzQVCFxSAzyEVG
-# HNOgggU7MIIFNzCCBB+gAwIBAgITHQAAAcXvt74tMkri3gAEAAABxTANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUuix0KZ0x/0O3aOJvRJm0RPve
+# AKmgggU7MIIFNzCCBB+gAwIBAgITHQAAAcXvt74tMkri3gAEAAABxTANBgkqhkiG
 # 9w0BAQsFADA4MRMwEQYKCZImiZPyLGQBGRYDY29tMRMwEQYKCZImiZPyLGQBGRYD
 # YWhjMQwwCgYDVQQDEwNEQzEwHhcNMTgwMjI4MjEzNDM1WhcNMTkwMjI4MjEzNDM1
 # WjBQMRMwEQYKCZImiZPyLGQBGRYDY29tMRMwEQYKCZImiZPyLGQBGRYDYWhjMQ4w
@@ -96,8 +101,8 @@ Write-Information "Profile loaded."
 # 8ixkARkWA2FoYzEMMAoGA1UEAxMDREMxAhMdAAABxe+3vi0ySuLeAAQAAAHFMAkG
 # BSsOAwIaBQCgeDAYBgorBgEEAYI3AgEMMQowCKACgAChAoAAMBkGCSqGSIb3DQEJ
 # AzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMG
-# CSqGSIb3DQEJBDEWBBSTM6JnuizK6UoG+lPHqmFF2SAAdzANBgkqhkiG9w0BAQEF
-# AASBgBCS3QN4y+QMOUC1lzRUM9hhWzx/qI1MZvuGRHCoanGKaFl6LXRwIKvkqPkf
-# WK2PfaVaPljJVqAMKV7SHe/xbk8rXt+NQqB8vn+Twd5vQXpN24oE4Q8fwkX24smw
-# KFkhj7KqbL0Wj6DxHwwuUBntKd1HVYJ7WlQZOn1wGflKyu8Y
+# CSqGSIb3DQEJBDEWBBRHzci3qJGfDpoav5liZFqMiaMPYTANBgkqhkiG9w0BAQEF
+# AASBgCb/yN5uA2INSWwk3jkLVKnVyzf5LRAMoyDSQcL7jNcI8fzDNLibViqRhsvR
+# VjQ0mrhljS0zcATovpu9bkw+BL0v2vdcherW+bJyx219pRiKjpHNHTdVQ96y9I8l
+# cItJs7xE1yaE4CKhikjmFxrtZOUwk7ditJdn8uKuSaQLJbv2
 # SIG # End signature block
