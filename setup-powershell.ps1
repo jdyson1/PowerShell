@@ -26,3 +26,6 @@ If (Test-Path -Path "$env:CMDER_ROOT")
 # Install Sql modules
 
 # Install Active Directory modules
+
+
+git config user.email "9710616+jdyson1@users.noreply.github.com"
