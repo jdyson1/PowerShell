@@ -1,7 +1,7 @@
 <#
-    PowerShell Profile Bootstrap
+    PowerShell Profile Bootstrap for cmder
 
-	This script should be placed wherever $profile references (i.e., C:\Users\<username>\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1)
+	This script should be placed in the cmder/config foldder
 
 	Load my source controlled profile script from my home drive.
 #>
