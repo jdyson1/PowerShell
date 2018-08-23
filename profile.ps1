@@ -39,41 +39,7 @@ param
      Return $newPath
 }
 
-
-# Add the PowerShell scripts folder to my path
-if (Test-Path -Path "$PSScriptRoot")
-{
-    $env:Path = "$env:path;$home\PowerShell"
-}
-
-# Add PowerShell folder in home directory to path
-#$HomeDirectoryPowerShellFolder = (Get-ChildItem env:USERPROFILE).Value + "\PowerShell"
-
-#If (Test-Path -Path $HomeDirectoryPowerShellFolder) {
-#	Write-Verbose "Found PowerShell folder in profile folder; adding to path"
-#
-#	$env:path = "$env:path;$HomeDirectoryPowerShellFolder"
-#} Else {
-#	Write-Information "PowerShell folder not found in user profile folder.  It will not be added to the path."
-#}
-
-# Add PowerShell folder on home drive to path
-#$HomeDrivePowerShellFolder = (Get-ChildItem env:HOMEDRIVE).Value + "\PowerShell"
-
-#If (Test-Path -Path $HomeDrivePowerShellFolder) {
-#	Write-Verbose "Adding PowerShell folder in HOMEDRIVE to path"
-#	$env:path = "$env:path;$HomeDrivePowerShellFolder"
-#} Else {
-#	Write-Information "PowerShell folder not found in HOMEDRIVE.  It will not be added to the path."
-#}
-
-# Copy the profile to the default location if it has been updated
-
-
-
 # TODO: Script to configure solarized colors for PowerShell window
-
-
 
 # Import posh-git and configure it
 If (Get-Module -ListAvailable -Name "posh-git")
@@ -95,55 +61,6 @@ else
     Write-Warning "posh-git module is not installed. To install it, start Windows PowerShell with the ''Run as administrator'' option and run ''Install-Module posh-git''."
 }
 
-# Customize posh-git prompt
-if (Get-Module -Name "posh-git")
-{
-    # Customize posh-git
-    Write-Verbose "Customizing posh-git"
-    
-    # Customize posh-git prompt
-    if (Get-Module -ListAvailable -Name posh-git) {
-	    $GitPromptSettings.DefaultPromptPrefix = "PS [$((Get-ChildItem Env:\COMPUTERNAME).Value)] "
-    }
-}
-
-#
-# PSReadLine
-#
-If (Get-Module -ListAvailable -Name "PSReadline")
-{
-    $module = Get-Module -Name "PSReadline"
-
-    Write-Information "$module.Name $module.Version is installed"
-
-    try
-    {
-        Import-Module -Name "PSReadline"
-    } catch
-    {
-        Write-Warning "PSReadline module could not be imported."
-    }  
-}
-else
-{
-    Write-Warning "PSReadline module is not installed. To install it, start Windows PowerShell with the ''Run as administrator'' option and run ''Install-Module PSReadline''."
-}
-
-
-Install-Module PowerLine
- 
-
-
-
-#Read-Host "Test"
-
-
-# Check if posh-git is installed
-
-
-
-
-
 # Update help files
 #. Update-Help
 
@@ -152,22 +69,7 @@ function Get-ProcessByName {
 	Get-Process | Where-Object { $_.ProcessName -like $string }
 }
 
-
-
-# Customize the prompt
-#function prompt
-#{
-#	$GitPromptSettings.DefaultPromptWriteStatusFirst = $true
-#	$prompt = Write-Prompt "PS "
-#	$prompt += & $GitPromptScriptBlock
-#	
-#	if ($prompt) { $prompt } else { " " }
-#
-#
-#	$PromptData = "PS $($executionContext.SessionState.Path.CurrentLocation)$('>' * ($nestedPromptLevel + 1))"
-#}
-
-Function global:Sign-Script {
+function global:Sign-Script {
 [Cmdletbinding()]
 	param([string]$filename)
 	$cert = (Get-ChildItem Cert:\CurrentUser\My\ -CodeSigningCert)
@@ -199,8 +101,8 @@ Write-Information "Profile loaded."
 # SIG # Begin signature block
 # MIIHQAYJKoZIhvcNAQcCoIIHMTCCBy0CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU3ljKhZo45h6IHEEAlmbrTQ0Z
-# zX+gggU7MIIFNzCCBB+gAwIBAgITHQAAAgVCmNIR9HPPiQAEAAACBTANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUqfz954fu8piYIW4Nn5JlX3gb
+# /dCgggU7MIIFNzCCBB+gAwIBAgITHQAAAgVCmNIR9HPPiQAEAAACBTANBgkqhkiG
 # 9w0BAQsFADA4MRMwEQYKCZImiZPyLGQBGRYDY29tMRMwEQYKCZImiZPyLGQBGRYD
 # YWhjMQwwCgYDVQQDEwNEQzEwHhcNMTgwNjExMTUxMjI3WhcNMTkwNjExMTUxMjI3
 # WjBQMRMwEQYKCZImiZPyLGQBGRYDY29tMRMwEQYKCZImiZPyLGQBGRYDYWhjMQ4w
@@ -232,8 +134,8 @@ Write-Information "Profile loaded."
 # 8ixkARkWA2FoYzEMMAoGA1UEAxMDREMxAhMdAAACBUKY0hH0c8+JAAQAAAIFMAkG
 # BSsOAwIaBQCgeDAYBgorBgEEAYI3AgEMMQowCKACgAChAoAAMBkGCSqGSIb3DQEJ
 # AzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMG
-# CSqGSIb3DQEJBDEWBBSwW8MiNnKT1AAK6u+bcqMP2Es+6jANBgkqhkiG9w0BAQEF
-# AASBgGWQiP3T8ZJYOdgyto42/XHKFOr1tjenuorsIHLRWmPIhzJ3ehfNB8HD7CQW
-# du7VIxOha6xlLh8Q/Ncsqt+nzE2sO4dpmIB9ewk/lLHfGVngX9KsdYeSDEcu755B
-# AIqUBVUwGZtGTZ9DdcxxXIRYaFa0oFDuZrz4Qukw5gg9gyXK
+# CSqGSIb3DQEJBDEWBBQlt8wDd2t1VSNSx1ooSCFCyZZ55TANBgkqhkiG9w0BAQEF
+# AASBgHHFzXrhZgsDpN5uC15qWXYvmE2QGkp8t+XceeEQpnWhWQJmw21jLtvZABgE
+# pRoeH9W/IWRaX/FvFTwr/1JV+2ZUFaHofPBW0moDssbq6jTtGjC+4cSlU4+B88Nt
+# JHfNn4UHtEYCgehejL9jc8eGjSyWjSU3eWIF+VV7EkWngJuj
 # SIG # End signature block
