@@ -1,7 +1,50 @@
 Write-Verbose "Loading $($MyInvocation.MyCommand.Name)..."
 
+Function global:Add-Path()
+{
+[Cmdletbinding()]
+param
+(
+    [parameter(Mandatory = $True, ValueFromPipeline = $True, Position = 0)][String[]]$path)
+
+    $oldPath = $env:Path
+
+    If (!$path)
+    {
+        Write-Error "No folder provided."
+        
+        Return
+     }
+
+     If ($oldPath | Select-String -SimpleMatch $path)
+     {
+        Write-Warning "Folder already in path, not adding."
+
+        Return
+     }
+
+     # Check if the folder exists
+     If (!(Test-Path -Path $path))
+     {
+        Write-Error "Folder does not exist, not adding."
+        Return
+     }
+
+     Write-Information "Adding $path to path"
+
+     $newPath = $oldPath + ";" + $path
+
+     $env:Path = $newPath
+
+     Return $newPath
+}
+
+
 # Add the PowerShell scripts folder to my path
-#$env:path = "$env:path;$home\PowerShell"
+if (Test-Path -Path "$PSScriptRoot")
+{
+    $env:Path = "$env:path;$home\PowerShell"
+}
 
 # Add PowerShell folder in home directory to path
 #$HomeDirectoryPowerShellFolder = (Get-ChildItem env:USERPROFILE).Value + "\PowerShell"
@@ -31,35 +74,6 @@ Write-Verbose "Loading $($MyInvocation.MyCommand.Name)..."
 # TODO: Script to configure solarized colors for PowerShell window
 
 
-#
-# posh-git
-#
-
-# Check if posh-git is installed; if not install it
-#If (-not(Get-Module -ListAvailable -Name "post-git"))
-#{
-#    Write-Information "posh-git is not installed."
-#    
-#    if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
-#    {      
-#        
-#        
-#        Write-Information "Installing posh-git"
-#        
-#        try
-#        {
-#            Install-Module posh-git
-#        }
-#        catch
-#        {
-#            Write-Error "An error occurred while attempting to install posh-git"
-#        }
-#    }
-#    else
-#    {
-#        Write-Warning "This script must be run with administrator rights in order to install posh-git"
-#    }
-#}
 
 # Import posh-git and configure it
 If (Get-Module -ListAvailable -Name "posh-git")
@@ -116,6 +130,7 @@ else
 }
 
 
+Install-Module PowerLine
  
 
 
@@ -152,9 +167,10 @@ function Get-ProcessByName {
 #	$PromptData = "PS $($executionContext.SessionState.Path.CurrentLocation)$('>' * ($nestedPromptLevel + 1))"
 #}
 
-function Sign-Script {
+Function global:Sign-Script {
+[Cmdletbinding()]
 	param([string]$filename)
-	$cert = (Get-CHildItem Cert:\CurrentUser\My\ -CodeSigningCert)
+	$cert = (Get-ChildItem Cert:\CurrentUser\My\ -CodeSigningCert)
 	Set-AuthenticodeSignature -Certificate $cert $filename
 }
 
@@ -183,8 +199,8 @@ Write-Information "Profile loaded."
 # SIG # Begin signature block
 # MIIHQAYJKoZIhvcNAQcCoIIHMTCCBy0CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUuix0KZ0x/0O3aOJvRJm0RPve
-# AKmgggU7MIIFNzCCBB+gAwIBAgITHQAAAgVCmNIR9HPPiQAEAAACBTANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU3ljKhZo45h6IHEEAlmbrTQ0Z
+# zX+gggU7MIIFNzCCBB+gAwIBAgITHQAAAgVCmNIR9HPPiQAEAAACBTANBgkqhkiG
 # 9w0BAQsFADA4MRMwEQYKCZImiZPyLGQBGRYDY29tMRMwEQYKCZImiZPyLGQBGRYD
 # YWhjMQwwCgYDVQQDEwNEQzEwHhcNMTgwNjExMTUxMjI3WhcNMTkwNjExMTUxMjI3
 # WjBQMRMwEQYKCZImiZPyLGQBGRYDY29tMRMwEQYKCZImiZPyLGQBGRYDYWhjMQ4w
@@ -216,8 +232,8 @@ Write-Information "Profile loaded."
 # 8ixkARkWA2FoYzEMMAoGA1UEAxMDREMxAhMdAAACBUKY0hH0c8+JAAQAAAIFMAkG
 # BSsOAwIaBQCgeDAYBgorBgEEAYI3AgEMMQowCKACgAChAoAAMBkGCSqGSIb3DQEJ
 # AzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMG
-# CSqGSIb3DQEJBDEWBBRHzci3qJGfDpoav5liZFqMiaMPYTANBgkqhkiG9w0BAQEF
-# AASBgKgP16DYQdUJPAVjO9jIEhhnNIw7GeT29r3Wo3cmECmt30WZssyloMCUb0I9
-# CLwY12uyoZ/W9+mXLIPNOLBuC3ew0aBnPB0997TJPtrAMEPq8FMol+MV27Jwz8Fp
-# 9uD21Tbvbrry7zigVBsGbr3AO/idSDpo6DJ0n37ucXm1IhJk
+# CSqGSIb3DQEJBDEWBBSwW8MiNnKT1AAK6u+bcqMP2Es+6jANBgkqhkiG9w0BAQEF
+# AASBgGWQiP3T8ZJYOdgyto42/XHKFOr1tjenuorsIHLRWmPIhzJ3ehfNB8HD7CQW
+# du7VIxOha6xlLh8Q/Ncsqt+nzE2sO4dpmIB9ewk/lLHfGVngX9KsdYeSDEcu755B
+# AIqUBVUwGZtGTZ9DdcxxXIRYaFa0oFDuZrz4Qukw5gg9gyXK
 # SIG # End signature block
