@@ -1,36 +1,67 @@
-Write-Host "Loading $($MyInvocation.MyCommand.Name)..."
+Write-Verbose "Loading $($MyInvocation.MyCommand.Name)..."
 
-# Add the PowerShell scripts folder to my path
-$env:path = "$env:path;$home\PowerShell"
+Function global:Add-Path()
+{
+[Cmdletbinding()]
+param
+(
+    [parameter(Mandatory = $True, ValueFromPipeline = $True, Position = 0)][String[]]$path)
 
-# Add PowerShell folder in home directory to path
-$HomeDirectoryPowerShellFolder = (Get-ChildItem env:USERPROFILE).Value + "\PowerShell"
+    $oldPath = $env:Path
 
-If (Test-Path -Path $HomeDirectoryPowerShellFolder) {
-	Write-Verbose "Found PowerShell folder in profile folder; adding to path"
+    If (!$path)
+    {
+        Write-Error "No folder provided."
+        
+        Return
+     }
 
-	$env:path = "$env:path;$HomeDirectoryPowerShellFolder"
-} Else {
-	Write-Information "PowerShell folder not found in user profile folder.  It will not be added to the path."
-}
+     If ($oldPath | Select-String -SimpleMatch $path)
+     {
+        Write-Warning "Folder already in path, not adding."
 
-# Add PowerShell folder on home drive to path
-$HomeDrivePowerShellFolder = (Get-ChildItem env:HOMEDRIVE).Value + "\PowerShell"
+        Return
+     }
 
-If (Test-Path -Path $HomeDrivePowerShellFolder) {
-	Write-Verbose "Adding PowerShell folder in HOMEDRIVE to path"
-	$env:path = "$env:path;$HomeDrivePowerShellFolder"
-} Else {
-	Write-Information "PowerShell folder not found in HOMEDRIVE.  It will not be added to the path."
-}
+     # Check if the folder exists
+     If (!(Test-Path -Path $path))
+     {
+        Write-Error "Folder does not exist, not adding."
+        Return
+     }
 
-try {
-	Import-Module posh-git
-} catch {
-	Write-Host "Module posh-git is not loaded."
+     Write-Information "Adding $path to path"
+
+     $newPath = $oldPath + ";" + $path
+
+     $env:Path = $newPath
+
+     Return $newPath
 }
 
 . (Join-Path -Path $HomeDrivePowerShellFolder -ChildPath $(switch($HOST.UI.RawUI.BackgroundColor.ToString()){'White'{'cmd-colors-solarized/Set-SolarizedLightColorDefaults.ps1'}'Black'{'cmd-colors-solarized/Set-SolarizedDarkColorDefaults.ps1'}default{return}}))
+
+# TODO: Script to configure solarized colors for PowerShell window
+
+# Import posh-git and configure it
+If (Get-Module -ListAvailable -Name "posh-git")
+{
+    $module = Get-Module -Name "posh-git"
+
+    Write-Information "$module.Name $module.Version is installed"
+
+    try
+    {
+        Import-Module -Name "posh-git"
+    } catch
+    {
+        Write-Warning "posh-git module could not be imported."
+    }  
+}
+else
+{
+    Write-Warning "posh-git module is not installed. To install it, start Windows PowerShell with the ''Run as administrator'' option and run ''Install-Module posh-git''."
+}
 
 # Update help files
 #. Update-Help
@@ -40,47 +71,50 @@ function Get-ProcessByName {
 	Get-Process | Where-Object { $_.ProcessName -like $string }
 }
 
-# Customize posh-git prompt
-if (Get-Module -ListAvailable -Name posh-git) {
-	$GitPromptSettings.DefaultPromptPrefix = "PS [$((Get-ChildItem Env:\COMPUTERNAME).Value)] "
-}
-
-# Customize the prompt
-#function prompt
-#{
-#	$GitPromptSettings.DefaultPromptWriteStatusFirst = $true
-#	$prompt = Write-Prompt "PS "
-#	$prompt += & $GitPromptScriptBlock
-#	
-#	if ($prompt) { $prompt } else { " " }
-#
-#
-#	$PromptData = "PS $($executionContext.SessionState.Path.CurrentLocation)$('>' * ($nestedPromptLevel + 1))"
-#}
-
-function Sign-Script {
+function global:Sign-Script {
+[Cmdletbinding()]
 	param([string]$filename)
 	$cert = (Get-ChildItem Cert:\CurrentUser\My\ -CodeSigningCert)
 	Set-AuthenticodeSignature -Certificate $cert $filename
 }
 
+function Touch-File
+{
+	$file = $args[0]
+
+	if ($file -eq $null)
+	{
+		throw "No filename supplied"
+	}
+
+	if(Test-Path $file)
+	{
+		(Get-ChildItem $file).LastWriteTime = Get-Date
+	}
+	else
+	{
+		echo $null > $file
+	}
+}
+
+Set-Alias touch Touch-File
 Write-Information "Profile loaded."
 
 # SIG # Begin signature block
 # MIIHQAYJKoZIhvcNAQcCoIIHMTCCBy0CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUuix0KZ0x/0O3aOJvRJm0RPve
-# AKmgggU7MIIFNzCCBB+gAwIBAgITHQAAAcXvt74tMkri3gAEAAABxTANBgkqhkiG
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUqfz954fu8piYIW4Nn5JlX3gb
+# /dCgggU7MIIFNzCCBB+gAwIBAgITHQAAAgVCmNIR9HPPiQAEAAACBTANBgkqhkiG
 # 9w0BAQsFADA4MRMwEQYKCZImiZPyLGQBGRYDY29tMRMwEQYKCZImiZPyLGQBGRYD
-# YWhjMQwwCgYDVQQDEwNEQzEwHhcNMTgwMjI4MjEzNDM1WhcNMTkwMjI4MjEzNDM1
+# YWhjMQwwCgYDVQQDEwNEQzEwHhcNMTgwNjExMTUxMjI3WhcNMTkwNjExMTUxMjI3
 # WjBQMRMwEQYKCZImiZPyLGQBGRYDY29tMRMwEQYKCZImiZPyLGQBGRYDYWhjMQ4w
 # DAYDVQQDEwVVc2VyczEUMBIGA1UEAxMLSmVzc2UgRHlzb24wgZ8wDQYJKoZIhvcN
-# AQEBBQADgY0AMIGJAoGBAK+dbS3v7pFAc3S70X3x9GOSD71EDIWZpQOyAOIhEpMx
-# BOUw7z294ybnljVxr9UV3VD3Nx8l6ThB69y8TM3c+Vm/VQDg0BjGMD696iAf6dXN
-# Pd9UYcOb6bJbt6xBc0da+WUwUWaIJCNt1VkcHIDwsIOxaRt7fzHYQ1HlZgL9LSHH
+# AQEBBQADgY0AMIGJAoGBAN8JC03ZWfgue9xrbt83DL7fwjY27r1Ki4SL23nLOlVh
+# KueDDv6Ljouy6wTZwM/qr0FGftRWKY8SStXyA7btLwd9pgwhXXYWtH0MLNYoIMr+
+# zF2S9PEtBcFVU8g6DgMKKGR3DwZF1N4K0lQ9eQoBSUzjohC5UNB5LXJ+HngQWkI1
 # AgMBAAGjggKkMIICoDAlBgkrBgEEAYI3FAIEGB4WAEMAbwBkAGUAUwBpAGcAbgBp
 # AG4AZzATBgNVHSUEDDAKBggrBgEFBQcDAzALBgNVHQ8EBAMCB4AwHQYDVR0OBBYE
-# FCZmHv+ZeUriaevr9Wm7OPePoy7SMB8GA1UdIwQYMBaAFAdsf7rwI0TdTBUSbvvU
+# FORgZ0gU9UmgOHotujrnJ+dGCGeOMB8GA1UdIwQYMBaAFAdsf7rwI0TdTBUSbvvU
 # yU92uK5eMIHmBgNVHR8Egd4wgdswgdiggdWggdKGgaVsZGFwOi8vL0NOPURDMSg0
 # KSxDTj1kYzEsQ049Q0RQLENOPVB1YmxpYyUyMEtleSUyMFNlcnZpY2VzLENOPVNl
 # cnZpY2VzLENOPUNvbmZpZ3VyYXRpb24sREM9YWhjLERDPWNvbT9jZXJ0aWZpY2F0
@@ -92,18 +126,18 @@ Write-Information "Profile loaded."
 # P29iamVjdENsYXNzPWNlcnRpZmljYXRpb25BdXRob3JpdHkwQAYIKwYBBQUHMAKG
 # NGh0dHA6Ly9kYzEuYWhjLmNvbS9DZXJ0RW5yb2xsL2RjMS5haGMuY29tX0RDMSg0
 # KS5jcnQwNgYDVR0RBC8wLaArBgorBgEEAYI3FAIDoB0MG0plc3NlLkR5c29uQGFk
-# dmhvbWVjYXJlLm9yZzANBgkqhkiG9w0BAQsFAAOCAQEAkg0uwNNCrExOMaZUAPSW
-# X2qG1SsDp+/fVmNrWYiGBTq6TOz61OMHEN6Nfj2g6419u4zzog7QoAza/7RAxPtJ
-# 9OOj3jTxjsm46612Y+nJltXtY1bTZUhPmRLkAA+3VyxeKHOBRPtSO8KUKWChfcO7
-# f/dEUnIuGnvzn+MII4XnmnIdj7lmO0dl0jakFFqRq2Nz9c5OH9UC3nW6cU0tfUji
-# OJkvOFeVBVrMEoDoNNZlZKM8zWNcvhibPpDf12aSuGadgvJSxM3rPh9/g9y87FPB
-# u4gfjWNGUJoHcnKpp4JgRqU8b6QSTjDUKc8+4LfDSUbTU0L1weOP1MY8QmUe70Qu
-# vDGCAW8wggFrAgEBME8wODETMBEGCgmSJomT8ixkARkWA2NvbTETMBEGCgmSJomT
-# 8ixkARkWA2FoYzEMMAoGA1UEAxMDREMxAhMdAAABxe+3vi0ySuLeAAQAAAHFMAkG
+# dmhvbWVjYXJlLm9yZzANBgkqhkiG9w0BAQsFAAOCAQEAIzvjteBMdbHd423T7OYr
+# f8B7EdLOyzNbFC4jpdXdBsWwRdbRykMI6RFgyNOGzZDNfmSaXUNR/URAKBxUTUT9
+# NdwgddFpBtsC9VpEL1wQzsp9AaSkwynGzo8GLlm6+8IMKe6xWRn2QVGb39y/gffX
+# FxpLcCuC6lRs5YICx+SY0N4X2bTWmhzTwTlgnxFD+FDCz6CuwKfFn0zjYefxeN8J
+# JwLZ6V8YJug797y0pWu0EO5GfH0K25K9dy0V3q/DA2dhiGlMs6C6WcUW8h+3CevO
+# 8c2FIDjPCH+MFweW7/xvUx7I2RnrsaNJeclxpqw6DbOPTzALlsml2vgkhpf+rhLu
+# TTGCAW8wggFrAgEBME8wODETMBEGCgmSJomT8ixkARkWA2NvbTETMBEGCgmSJomT
+# 8ixkARkWA2FoYzEMMAoGA1UEAxMDREMxAhMdAAACBUKY0hH0c8+JAAQAAAIFMAkG
 # BSsOAwIaBQCgeDAYBgorBgEEAYI3AgEMMQowCKACgAChAoAAMBkGCSqGSIb3DQEJ
 # AzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMG
-# CSqGSIb3DQEJBDEWBBRHzci3qJGfDpoav5liZFqMiaMPYTANBgkqhkiG9w0BAQEF
-# AASBgCb/yN5uA2INSWwk3jkLVKnVyzf5LRAMoyDSQcL7jNcI8fzDNLibViqRhsvR
-# VjQ0mrhljS0zcATovpu9bkw+BL0v2vdcherW+bJyx219pRiKjpHNHTdVQ96y9I8l
-# cItJs7xE1yaE4CKhikjmFxrtZOUwk7ditJdn8uKuSaQLJbv2
+# CSqGSIb3DQEJBDEWBBQlt8wDd2t1VSNSx1ooSCFCyZZ55TANBgkqhkiG9w0BAQEF
+# AASBgHHFzXrhZgsDpN5uC15qWXYvmE2QGkp8t+XceeEQpnWhWQJmw21jLtvZABgE
+# pRoeH9W/IWRaX/FvFTwr/1JV+2ZUFaHofPBW0moDssbq6jTtGjC+4cSlU4+B88Nt
+# JHfNn4UHtEYCgehejL9jc8eGjSyWjSU3eWIF+VV7EkWngJuj
 # SIG # End signature block
