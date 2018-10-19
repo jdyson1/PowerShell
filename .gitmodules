@@ -1,0 +1,3 @@
+[submodule "cmd-colors-solarized"]
+	path = cmd-colors-solarized
+	url = https://github.com/neilpa/cmd-colors-solarized.git

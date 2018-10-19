@@ -30,6 +30,7 @@ try {
 	Write-Host "Module posh-git is not loaded."
 }
 
+. (Join-Path -Path $HomeDrivePowerShellFolder -ChildPath $(switch($HOST.UI.RawUI.BackgroundColor.ToString()){'White'{'cmd-colors-solarized/Set-SolarizedLightColorDefaults.ps1'}'Black'{'cmd-colors-solarized/Set-SolarizedDarkColorDefaults.ps1'}default{return}}))
 
 # Update help files
 #. Update-Help
@@ -59,7 +60,7 @@ if (Get-Module -ListAvailable -Name posh-git) {
 
 function Sign-Script {
 	param([string]$filename)
-	$cert = (Get-CHildItem Cert:\CurrentUser\My\ -CodeSigningCert)
+	$cert = (Get-ChildItem Cert:\CurrentUser\My\ -CodeSigningCert)
 	Set-AuthenticodeSignature -Certificate $cert $filename
 }
 
