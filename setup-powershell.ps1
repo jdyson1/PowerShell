@@ -1,14 +1,26 @@
+#Requires -RunAsAdministrator
 <#
     Setup PowerShell Environment
 #>
 
-# Check if we're running as Administrator, if not, warn
-
+$VerbosePreference="Continue"
 
 # Run git to get latest updates
 
 # Install profile bootstrap
-Copy-Item $PSScriptRoot\Microsoft.PowerShell_profile.ps1 -Destination $profile -Force
+Write-Verbose "Installing PowerShell profile bootstrap..."
+
+Try
+{
+	Copy-Item $PSScriptRoot\Microsoft.PowerShell_profile.ps1 -Destination $profile -Force -ErrorAction Stop
+
+	Write-Verbose "PowerShell profile bootstrap was copied to $profile."
+}
+Catch
+{
+	# We're going to continue 
+	Write-Error -Message "Could not copy PowerShell profile bootstrap to $profile."  
+}
 
 # Install profile boostrap for ISE
 
@@ -16,86 +28,51 @@ Copy-Item $PSScriptRoot\Microsoft.PowerShell_profile.ps1 -Destination $profile -
 # Install profile for cmder
 If (Test-Path -Path "$env:CMDER_ROOT")
 {
-    Write-Information "Found Cmder at $env:CMDER_ROOT"
+    Write-Host "Found Cmder at $env:CMDER_ROOT, copying profile."
     Copy-Item "$PSScriptRoot\user-profile.ps1" -Destination "$env:CMDER_ROOT)\config" -Force
 }
-
-# Add the PowerShell scripts folder to my path
-if (Test-Path -Path "$PSScriptRoot")
-{
-    Add-Path "$home\PowerShell"
-    #$env:Path = "$env:path;$home\PowerShell"
-}
-
-# Add PowerShell folder in home directory to path
-#$HomeDirectoryPowerShellFolder = (Get-ChildItem env:USERPROFILE).Value + "\PowerShell"
-
-#If (Test-Path -Path $HomeDirectoryPowerShellFolder) {
-#	Write-Verbose "Found PowerShell folder in profile folder; adding to path"
-#
-#	$env:path = "$env:path;$HomeDirectoryPowerShellFolder"
-#} Else {
-#	Write-Information "PowerShell folder not found in user profile folder.  It will not be added to the path."
-#}
-
-# Add PowerShell folder on home drive to path
-#$HomeDrivePowerShellFolder = (Get-ChildItem env:HOMEDRIVE).Value + "\PowerShell"
-
-#If (Test-Path -Path $HomeDrivePowerShellFolder) {
-#	Write-Verbose "Adding PowerShell folder in HOMEDRIVE to path"
-#	$env:path = "$env:path;$HomeDrivePowerShellFolder"
-#} Else {
-#	Write-Information "PowerShell folder not found in HOMEDRIVE.  It will not be added to the path."
-#}
-
-# Copy the profile to the default location if it has been updated
-
-
-
-
-# Install posh-git
 
 #
 # posh-git
 #
+Write-Host "Installing posh-git..."
 
 # Check if posh-git is installed; if not install it
-#If (-not(Get-Module -ListAvailable -Name "post-git"))
-#{
-#    Write-Information "posh-git is not installed."
-#    
-#    if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
-#    {      
-#        
-#        
-#        Write-Information "Installing posh-git"
-#        
-#        try
-#        {
-#            Install-Module posh-git
-#        }
-#        catch
-#        {
-#            Write-Error "An error occurred while attempting to install posh-git"
-#        }
-#    }
-#    else
-#    {
-#        Write-Warning "This script must be run with administrator rights in order to install posh-git"
-#    }
-#}
+If (-not(Get-Module -ListAvailable -Name "post-git"))
+{
+    Write-Information "posh-git is not installed."
+
+        try
+        {
+            Install-Module posh-git -ErrorAction Stop
+
+	    Write-Host "posh-git installed."
+        }
+        catch
+        {
+            Write-Error "An error occurred while attempting to install posh-git"
+        }
+}
+
+# Configure git
+# Configure git to use my github e-mail instead of my real e-mail
+git config user.email "9710616+jdyson1@users.noreply.github.com"
+
+Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 
 # Install Sql modules
+Install-Module -Name SqlServer
+
+Install-Module -Name sqlpsx
 
 # Install Active Directory modules
 
-
-git config user.email "9710616+jdyson1@users.noreply.github.com"
-
-
 Install-Module PowerLine
 
-Install-Module ReportingServicesTools 
+#Install-Module ReportingServicesTools 
+
+# PSReadLine
+Install-Module PSReadLine
 
 # SIG # Begin signature block
 # MIIHQAYJKoZIhvcNAQcCoIIHMTCCBy0CAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
